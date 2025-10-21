@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Teachable Machine Image Model</title>
+
+    <!-- Minimal styling: centreret layout + overlay -->
+    <style>
+      html, body { height: 100%; margin: 0; font-family: system-ui, sans-serif; }
+      /* Center the main app area */
+      #app {
+        min-height: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+      #webcam-container canvas { border-radius: 10px; box-shadow: 0 6px 16px rgba(0,0,0,.08); }
+      #label-container { display: none; } /* skjul labels */
+      #color-box {
+        width: 140px; height: 140px; border-radius: 12px;
+        background: white; box-shadow: 0 8px 18px rgba(0,0,0,.08);
+      }
+
+      /* Fullscreen overlay */
+      #overlay {
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,.5);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 999;
+      }
+      #overlay .panel {
+        background: #fff;
+        width: min(520px, 92vw);
+        padding: 22px 20px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,.15);
+      }
+      #overlay h2 { margin: 0 0 8px; }
+      #overlay p  { margin: 0 0 16px; line-height: 1.5; }
+      #overlay button {
+        padding: 10px 16px; border: 0; border-radius: 10px;
+        background: #111; color: #fff; cursor: pointer; font-weight: 600;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Overlay / Start -->
+    <div id="overlay">
+      <div class="panel">
+        <h2>LYD GUD?????</h2>
+        <p>
+          * Placer begge hænder i billedet <br>
+          * Skift mellem at <b>lukke</b> og <b>åbne</b> hænderne
+        </p>
+        <button id="startBtn">Start</button>
+      </div>
+    </div>
+
+    <!-- Centered app area -->
+    <main id="app">
+      <div id="webcam-container"></div>
+      <div id="label-container"></div>
+      <div id="color-box"></div>
+
+      <!-- Audio (muted to start) -->
+      <audio id="sndClosed" src="audio/lyd1.wav" loop muted></audio>
+      <audio id="sndOpen"   src="audio/lyd2.wav" loop muted></audio>
+    </main>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+    <script>
+      const URL = "https://teachablemachine.withgoogle.com/models/q_e6knNyN/";
+
+      let model, webcam, labelContainer, maxPredictions;
+      let sndClosed, sndOpen;
+
+      const CLASS_COLORS = {
+        "No hands": "white",
+        "Closed hands": "orange",
+        "Open hands": "green",
+      };
+
+      async function init() {
+        // load model
+        const modelURL = URL + "model.json";
+        const metadataURL = URL + "metadata.json";
+        model = await tmImage.load(modelURL, metadataURL);
+        maxPredictions = model.getTotalClasses();
+
+        // webcam
+        const flip = true;
+        webcam = new tmImage.Webcam(200, 200, flip);
+        await webcam.setup();
+        await webcam.play();
+
+        document.getElementById("webcam-container").appendChild(webcam.canvas);
+        labelContainer = document.getElementById("label-container");
+        for (let i = 0; i < maxPredictions; i++) {
+          labelContainer.appendChild(document.createElement("div"));
+        }
+
+        // audio refs
+        sndClosed = document.getElementById("sndClosed");
+        sndOpen   = document.getElementById("sndOpen");
+
+        // try to pre-play (muted) — we already have a user gesture from Start
+        try { await sndClosed.play(); } catch(e) { console.log("Closed play blocked:", e); }
+        try { await sndOpen.play();   } catch(e) { console.log("Open play blocked:", e);  }
+
+        // loop
+        window.requestAnimationFrame(loop);
+      }
+
+      async function loop() {
+        webcam.update();
+        await predict();
+        window.requestAnimationFrame(loop);
+      }
+
+      async function predict() {
+        const prediction = await model.predict(webcam.canvas);
+
+        // find top class
+        let top = prediction[0];
+        for (let i = 1; i < prediction.length; i++) {
+          if (prediction[i].probability > top.probability) top = prediction[i];
+        }
+
+        const topClassName = top.className;
+        const color = CLASS_COLORS[topClassName] || "black";
+        document.getElementById("color-box").style.background = color;
+
+        if (!sndClosed || !sndOpen) return;
+
+        if (topClassName === "Closed hands") {
+          sndClosed.muted = false;
+          sndOpen.muted = true;
+        } else if (topClassName === "Open hands") {
+          sndClosed.muted = true;
+          sndOpen.muted = false;
+        } else {
+          sndClosed.muted = true;
+          sndOpen.muted = true;
+        }
+      }
+
+      // Start button → hide overlay + run init
+      document.getElementById('startBtn').addEventListener('click', async () => {
+        // proactively start audio on gesture
+        const c = document.getElementById('sndClosed');
+        const o = document.getElementById('sndOpen');
+        try { await c.play(); } catch(_) {}
+        try { await o.play(); } catch(_) {}
+        document.getElementById('overlay').style.display = 'none';
+        init();
+      });
+    </script>
+  </body>
+</html>
