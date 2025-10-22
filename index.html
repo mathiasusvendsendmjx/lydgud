@@ -27,15 +27,8 @@
         box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
       }
       #label-container {
-        display: none;
+        display: all;
       } /* skjul labels */
-      #color-box {
-        width: 140px;
-        height: 140px;
-        border-radius: 12px;
-        background: white;
-        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
-      }
 
       /* Fullscreen overlay */
       #overlay {
@@ -80,8 +73,8 @@
         <h2>LYD GUD?????</h2>
         <p>
           * Placer dig i midten af skærmen <br />
-          * Tag højre hånd foran kameraet <br />
-          * Skift mellem at <b>lukke</b> og <b>åbne</b> hånden for at høre lyde
+          * Tag højre hånd helt foran kameraet <br />
+          * Skift mellem at <b>lukke</b> og <b>åbne</b> hånden
         </p>
         <button id="startBtn">Start</button>
       </div>
@@ -91,7 +84,6 @@
     <main id="app">
       <div id="webcam-container"></div>
       <div id="label-container"></div>
-      <div id="color-box"></div>
 
       <!-- Audio (muted to start) -->
       <audio id="sndClosed" src="audio/lyd1.wav" loop muted></audio>
@@ -106,12 +98,6 @@
 
       let model, webcam, labelContainer, maxPredictions;
       let sndClosed, sndOpen;
-
-      const CLASS_COLORS = {
-        "No hands": "white",
-        "Closed hands": "orange",
-        "Open hands": "green",
-      };
 
       async function init() {
         // load model
@@ -160,6 +146,7 @@
 
       async function predict() {
         const prediction = await model.predict(webcam.canvas);
+         console.log(prediction);
 
         // find top class
         let top = prediction[0];
@@ -168,8 +155,6 @@
         }
 
         const topClassName = top.className;
-        const color = CLASS_COLORS[topClassName] || "black";
-        document.getElementById("color-box").style.background = color;
 
         if (!sndClosed || !sndOpen) return;
 
