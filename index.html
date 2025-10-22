@@ -6,7 +6,12 @@
 
     <!-- Minimal styling: centreret layout + overlay -->
     <style>
-      html, body { height: 100%; margin: 0; font-family: system-ui, sans-serif; }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        font-family: system-ui, sans-serif;
+      }
       /* Center the main app area */
       #app {
         min-height: 100%;
@@ -17,18 +22,29 @@
         justify-content: center;
         padding: 24px;
       }
-      #webcam-container canvas { border-radius: 10px; box-shadow: 0 6px 16px rgba(0,0,0,.08); }
-      #label-container { display: none; } /* skjul labels */
+      #webcam-container canvas {
+        border-radius: 10px;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+      }
+      #label-container {
+        display: none;
+      } /* skjul labels */
       #color-box {
-        width: 140px; height: 140px; border-radius: 12px;
-        background: white; box-shadow: 0 8px 18px rgba(0,0,0,.08);
+        width: 140px;
+        height: 140px;
+        border-radius: 12px;
+        background: white;
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
       }
 
       /* Fullscreen overlay */
       #overlay {
-        position: fixed; inset: 0;
-        background: rgba(0,0,0,.5);
-        display: flex; align-items: center; justify-content: center;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
         z-index: 999;
       }
       #overlay .panel {
@@ -36,13 +52,23 @@
         width: min(520px, 92vw);
         padding: 22px 20px;
         border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0,0,0,.15);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
       }
-      #overlay h2 { margin: 0 0 8px; }
-      #overlay p  { margin: 0 0 16px; line-height: 1.5; }
+      #overlay h2 {
+        margin: 0 0 8px;
+      }
+      #overlay p {
+        margin: 0 0 16px;
+        line-height: 1.5;
+      }
       #overlay button {
-        padding: 10px 16px; border: 0; border-radius: 10px;
-        background: #111; color: #fff; cursor: pointer; font-weight: 600;
+        padding: 10px 16px;
+        border: 0;
+        border-radius: 10px;
+        background: #111;
+        color: #fff;
+        cursor: pointer;
+        font-weight: 600;
       }
     </style>
   </head>
@@ -53,7 +79,7 @@
       <div class="panel">
         <h2>LYD GUD?????</h2>
         <p>
-          * Placer begge hænder i billedet <br>
+          * Placer begge hænder i billedet <br />
           * Skift mellem at <b>lukke</b> og <b>åbne</b> hænderne
         </p>
         <button id="startBtn">Start</button>
@@ -68,7 +94,7 @@
 
       <!-- Audio (muted to start) -->
       <audio id="sndClosed" src="audio/lyd1.wav" loop muted></audio>
-      <audio id="sndOpen"   src="audio/lyd2.wav" loop muted></audio>
+      <audio id="sndOpen" src="audio/lyd2.wav" loop muted></audio>
     </main>
 
     <!-- Scripts -->
@@ -107,11 +133,19 @@
 
         // audio refs
         sndClosed = document.getElementById("sndClosed");
-        sndOpen   = document.getElementById("sndOpen");
+        sndOpen = document.getElementById("sndOpen");
 
         // try to pre-play (muted) — we already have a user gesture from Start
-        try { await sndClosed.play(); } catch(e) { console.log("Closed play blocked:", e); }
-        try { await sndOpen.play();   } catch(e) { console.log("Open play blocked:", e);  }
+        try {
+          await sndClosed.play();
+        } catch (e) {
+          console.log("Closed play blocked:", e);
+        }
+        try {
+          await sndOpen.play();
+        } catch (e) {
+          console.log("Open play blocked:", e);
+        }
 
         // loop
         window.requestAnimationFrame(loop);
@@ -151,15 +185,21 @@
       }
 
       // Start button → hide overlay + run init
-      document.getElementById('startBtn').addEventListener('click', async () => {
-        // proactively start audio on gesture
-        const c = document.getElementById('sndClosed');
-        const o = document.getElementById('sndOpen');
-        try { await c.play(); } catch(_) {}
-        try { await o.play(); } catch(_) {}
-        document.getElementById('overlay').style.display = 'none';
-        init();
-      });
+      document
+        .getElementById("startBtn")
+        .addEventListener("click", async () => {
+          // proactively start audio on gesture
+          const c = document.getElementById("sndClosed");
+          const o = document.getElementById("sndOpen");
+          try {
+            await c.play();
+          } catch (_) {}
+          try {
+            await o.play();
+          } catch (_) {}
+          document.getElementById("overlay").style.display = "none";
+          init();
+        });
     </script>
   </body>
 </html>
